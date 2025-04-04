@@ -109,17 +109,19 @@ def test_view_user_not_found(client):
 
 
 def test_view_user(client):
-    #criar usuário antes do teste
+    # criar usuário antes do teste
     response = client.post(
-        '/users/', 
+        '/users/',
         json={
             'username': 'rodrigo',
             'email': 'user@example.com',
             'password': '123456',
-        }
+        },
     )
 
-    assert response.status_code == HTTPStatus.CREATED  # pra garantir que foi criado
+    assert (
+        response.status_code == HTTPStatus.CREATED
+    )  # pra garantir que foi criado
 
     response = client.get('/users/1')
     assert response.status_code == HTTPStatus.OK
