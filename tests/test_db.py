@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from sqlalchemy import select
+from sqlalchemy import select  # type: ignore
 
 from fast_zero.models import User
 

@@ -1,7 +1,7 @@
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+import pytest # type: ignore
+from fastapi.testclient import TestClient # type: ignore
+from sqlalchemy import create_engine# type: ignore
+from sqlalchemy.orm import Session# type: ignore
 
 from fast_zero.app import app
 from fast_zero.models import table_registry
