@@ -1,9 +1,9 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config #type: ignore
+from sqlalchemy import pool #type: ignore
 
-from alembic import context
+from alembic import context #type: ignore
 
 from fast_zero.models import table_registry
 from fast_zero.settings import Settings

@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from fast_zero.schemas import UserPublic
+
 
 def test_root_deve_retornar_ok_e_ola_lucas(client):
     response = client.get('/')  # Act: o lugar q vai ter essa ação
@@ -16,66 +18,81 @@ def test_root_deve_retornar_ok_e_ola_lucas(client):
 
 def test_create_user(client):
     response = client.post(
-        '/users/',
-        json={  # UserSchema
-            'username': 'testname',
-            'email': 'testemail@gmail.com',
-            'password': 'coxinha123',
+        '/users',
+        json={
+            'username': 'alice',
+            'email': 'alice@example.com',
+            'password': 'secret',
         },
-    )  # Act: o lugar q vai ter essa ação
-
-    # validar se chegou 201, created
+    )
     assert response.status_code == HTTPStatus.CREATED
-
-    # validar o userPublic
     assert response.json() == {
+        'username': 'alice',
+        'email': 'alice@example.com',
         'id': 1,
-        'username': 'testname',
-        'email': 'testemail@gmail.com',
     }
 
 
-def test_read_user(client):
+def test_read_users(client):
+    response = client.get('/users')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': []}
+
+
+def test_read_users_with_users(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
     response = client.get('/users/')
-
-    assert (
-        response.status_code == HTTPStatus.OK
-    )  # Assert: Garantir que deu tudo certo
-
-    assert response.json() == {
-        'users': [
-            {'id': 1, 'username': 'testname', 'email': 'testemail@gmail.com'},
-        ]
-    }
+    assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user(client):
-    # aqui eu tenho que mandar a senha pq
-    # UserSchema pede isso
-    # (user_id: int, user: UserSchema), oia aqui isso no app.py
-    # pede essas duas coisas
+def test_update_user(client, user):
     response = client.put(
         '/users/1',
         json={
-            'id': 1,
-            'username': 'rodrigo',
-            'email': 'testemail@gmail.com',
-            'password': 'coxinha123',
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
         },
-    )  # Act: o lugar q vai ter essa ação
-
+    )
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == {
+        'username': 'bob',
+        'email': 'bob@example.com',
         'id': 1,
-        'username': 'rodrigo',
-        'email': 'testemail@gmail.com',
     }
 
 
-def test_delete_user(client):
-    response = client.delete('users/1')
+def test_update_integrity_error(client, user):
+    # Criando um registro para "fausto"
+    client.post(
+        '/users',
+        json={
+            'username': 'fausto',
+            'email': 'fausto@example.com',
+            'password': 'secret',
+        },
+    )
 
+    # Alterando o user.username das fixture para fausto
+    response_update = client.put(
+        f'/users/{user.id}',
+        json={
+            'username': 'fausto',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+
+    assert response_update.status_code == HTTPStatus.CONFLICT
+    assert response_update.json() == {
+        'detail': 'Username or Email already exists'
+    }
+
+
+def test_delete_user(client, user):
+    response = client.delete('/users/1')
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'User Deleted'}
+    assert response.json() == {'message': 'User deleted'}
 
 
 def test_user_not_found_put(client):
@@ -130,3 +147,53 @@ def test_view_user(client):
         'username': 'rodrigo',
         'email': 'user@example.com',
     }
+
+
+def test_create_user_username_conflict(client):
+    # criar usuário com username "rodrigo"
+    client.post(
+        '/users/',
+        json={
+            'username': 'rodrigo',
+            'email': 'rodrigo@email.com',
+            'password': '123456',
+        },
+    )
+
+    # tentar criar outro com mesmo username
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'rodrigo',
+            'email': 'outro@email.com',
+            'password': '123456',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username already exists'}
+
+
+def test_create_user_email_conflict(client):
+    # Criar usuário com email
+    client.post(
+        '/users/',
+        json={
+            'username': 'user1',
+            'email': 'email@email.com',
+            'password': '123456',
+        },
+    )
+
+    # Tentar criar outro com mesmo email
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'user2',
+            'email': 'email@email.com',
+            'password': '123456',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Email already exists'}

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import func # type: ignore
-from sqlalchemy.orm import Mapped, mapped_column, registry # type: ignore
+from sqlalchemy import func  # type: ignore
+from sqlalchemy.orm import Mapped, mapped_column, registry  # type: ignore
 
 table_registry = registry()
 
