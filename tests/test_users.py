@@ -198,24 +198,23 @@ def test_create_user_email_conflict(client):
     assert response.json() == {'detail': 'Email already exists'}
 
 
-def test_different_id_user_put(client, token):
+def test_update_user_with_wrong_user(client, token, other_user):
     response = client.put(
-        '/users/999',  # ID diferente
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'user1',
-            'email': 'email@email.com',
-            'password': '123456',
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
         },
     )
-
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_different_id_user_delete(client, token):
+def test_different_id_user_delete(client, token, other_user):
     response = client.delete(
-        '/users/43', headers={'Authorization': f'Bearer {token}'}
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
