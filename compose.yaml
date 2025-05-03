@@ -1,0 +1,19 @@
+services:
+  fastzero_app:
+    image: fastzero_app
+    entrypoint: ./entrypoint.sh
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:///database.db
+
+
+#docker-compose up
+
+#docker-compose down
+
+# Você pode iniciar os serviços em segundo plano com a flag -d 
+# usando docker-compose up -d. Isso permite que os contêineres rodem 
+# em segundo plano, liberando o terminal para outras tarefas.
+
